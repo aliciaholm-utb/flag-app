@@ -1,0 +1,10 @@
+#flagContainer {
+  margin: 25px auto;
+  width: 150px;
+  border: 1px solid black;
+  padding: 50px;
+}
+
+#flagImage {
+  width: 100%;
+}
