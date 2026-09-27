@@ -1,6 +1,7 @@
 import "./style.css";
 
-const URL = "https://api.restcountries.com/countries/v5";
+let offset = 0;
+
 const APIKEY = import.meta.env.VITE_REST_COUNTRIES_API_KEY;
 const flagImage = document.querySelector("#flagImage");
 const countryName = document.querySelector("#countryName");
@@ -20,37 +21,89 @@ const greetings = {
   fr: "Bonjour!",
 };
 
+
+function fetchCountries(){
+  const URL = `https://api.restcountries.com/countries/v5?limit=100&offset=${offset}`;
+
 fetch(URL, options)
   .then((response) => response.json())
   .then((data) => {
     console.log(data);
 
     const countries = data.data.objects;
+    console.log(countries.length);
     countries.forEach((country) => {
-      console.log(country);
+ 
+
+      
       const countryCard = document.createElement("div");
+      countryCard.classList.add("countryCard");
+      
+      const flagArea = document.createElement("div");
+      flagArea.classList.add("flagArea");
       const countryFlag = document.createElement("img");
+if(country.flag.url_svg){
+      countryFlag.src = country.flag.url_svg;
+      flagArea.appendChild(countryFlag);
 
-      countryCardContainer.appendChild(countryCard, countryFlag);
+} else{
+const flagPlaceholder = document.createElement("div");
+flagPlaceholder.classList.add("flagPlaceholder");
+flagPlaceholder.textContent = "🏳️";
+const missingFlagText = document.createElement("p");
+missingFlagText.textContent = "Flagga saknas!"
+countryCard.append(flagPlaceholder);
+flagPlaceholder.appendChild(missingFlagText);
+flagArea.appendChild(flagPlaceholder);
 
-      flagImage.src = country.flag.url_svg;
+
+}
+      countryFlag.classList.add("countryFlag");
+      countryCardContainer.appendChild(countryCard);
+
       const swedishName = country.names.translations.swe.common;
-      console.log(swedishName);
-      countryName.textContent = swedishName;
+      const countryTitle = document.createElement("h1");
+      countryTitle.textContent = swedishName;
+
+
+      countryCard.append(flagArea, countryTitle);
+
 
       if (country.languages.length > 0) {
-        const languageCode = country.languages[0].iso639_1;
-        console.log(languageCode);
 
+      for(const language of country.languages){
+        const languageCode = language.iso639_1;
+        const languageName = language.name;
         const greeting = greetings[languageCode];
 
-        if (greeting === undefined) {
-          greetingText.textContent = "Hälsning saknas";
+        const languageGreeting = document.createElement("p");
+ if (greeting === undefined) {
+          languageGreeting.textContent = "Hälsning saknas";
         } else {
-          greetingText.textContent = greeting;
+languageGreeting.textContent =`
+${languageName}: ${greeting}`;
         }
-      } else {
-        console.log("Detta land har ingen språkkod");
+        countryCard.appendChild(languageGreeting);
+      } 
+      }else {
+const noLanguageText=document.createElement("p")
+noLanguageText.textContent = "Har ingen hälsningstext!"
+countryCard.appendChild(noLanguageText)
       }
+
+
     });
+
+    if(data.data.meta.more === true){
+      offset += 100;
+      fetchCountries();
+    }
+
   });
+
+
+}
+
+fetchCountries();
+
+
